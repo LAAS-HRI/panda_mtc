@@ -111,9 +111,9 @@ void motionPlanning::createPlaceTask(std::unique_ptr<moveit::task_constructor::T
 	placeTask->setProperty("object",object);
 
 	placeTask->setProperty("group",planGroup);
-	placeTask->setProperty("eef","hand");
-	eef_ = "hand";
-	ikFrame_ = "panda_link8";
+	placeTask->setProperty("eef",eef_);
+	//eef_ = "hand";
+	//ikFrame_ = "panda_link8";
 	ungrasp = "open";
 
 
@@ -207,8 +207,8 @@ void motionPlanning::createMoveTask(std::unique_ptr<moveit::task_constructor::Ta
 {
 	moveTask->setRobotModel(kinematic_model_);
 
-	eef_ = "hand";
-	ikFrame_ = "panda_link8";
+	//eef_ = "hand";
+	//ikFrame_ = "panda_link8";
 	
 	//Start state
 	Stage* current_state = nullptr;
@@ -299,9 +299,9 @@ void motionPlanning::createPickTaskCustom(std::unique_ptr<moveit::task_construct
 	pickTask->setProperty("object",object);
 
 	pickTask->setProperty("group",planGroup);
-	pickTask->setProperty("eef","hand");
-	eef_ = "hand";
-	ikFrame_ = "panda_link8";
+	pickTask->setProperty("eef",eef_);
+	//eef_ = "hand";
+	//ikFrame_ = "panda_link8";
 	pregrasp = "open";
 	postgrasp = "close";
 	
@@ -353,7 +353,7 @@ void motionPlanning::createPickTaskCustom(std::unique_ptr<moveit::task_construct
 			stage->setIKFrame(ikFrame_);
 
 			geometry_msgs::Vector3Stamped vec;
-			vec.header.frame_id = "panda_link0";
+			vec.header.frame_id = baseFrame_;
 			vec.vector.z = -1.0;
 			stage->setDirection(vec);
 			grasp->insert(std::move(stage));
@@ -415,7 +415,7 @@ void motionPlanning::createPickTaskCustom(std::unique_ptr<moveit::task_construct
 			stage->setIKFrame(ikFrame_);
 			// Set upward direction
 			geometry_msgs::Vector3Stamped vec;
-			vec.header.frame_id = "panda_link0";
+			vec.header.frame_id = baseFrame_;
 			vec.vector.z = 1.0;
 			stage->setDirection(vec);
 			grasp->insert(std::move(stage));
@@ -453,11 +453,13 @@ void motionPlanning::createPickTask(std::unique_ptr<moveit::task_constructor::Ta
 	pickTask->setProperty("object",object);
 
 	pickTask->setProperty("group",planGroup);
-	pickTask->setProperty("eef","hand");
-	eef_ = "hand";
-	ikFrame_ = "panda_link8";
+	pickTask->setProperty("eef",eef_);
+	//eef_ = "hand";
+	//ikFrame_ = "panda_link8";
 	pregrasp = "open";
 	grasp = "close";
+
+	ROS_ERROR_STREAM("IK FRAME IS " << ikFrame_);
 
 	// Increase precision to avoid collision
 	pipelinePlanner_->setProperty("longest_valid_segment_fraction",0.00001);
@@ -567,7 +569,7 @@ void motionPlanning::createPickTask(std::unique_ptr<moveit::task_constructor::Ta
 
 			// Set upward direction
 			geometry_msgs::Vector3Stamped vec;
-			vec.header.frame_id = "panda_link0";
+			vec.header.frame_id = baseFrame_;
 			vec.vector.z = 1.0;
 			stage->setDirection(vec);
 			pick->insert(std::move(stage));
@@ -608,9 +610,9 @@ void motionPlanning::createPickPlaceTask(std::unique_ptr<moveit::task_constructo
 	pickPlaceTask->setProperty("object",object);
 	
 	pickPlaceTask->setProperty("group",planGroup);
-	pickPlaceTask->setProperty("eef","hand");
-	eef_ = "hand";
-	ikFrame_ = "panda_link8";
+	pickPlaceTask->setProperty("eef",eef_);
+	//eef_ = "hand";
+	//ikFrame_ = "panda_link8";
 	pregrasp = "open";
 	grasp = "close";
 	ungrasp = "open";
@@ -732,7 +734,7 @@ void motionPlanning::createPickPlaceTask(std::unique_ptr<moveit::task_constructo
 
 			// Set upward direction
 			geometry_msgs::Vector3Stamped vec;
-			vec.header.frame_id = "panda_link0";
+			vec.header.frame_id = baseFrame_;
 			vec.vector.z = 1.0;
 			stage->setDirection(vec);
 			pick->insert(std::move(stage));
@@ -1226,6 +1228,34 @@ void motionPlanning::planCallback(const pr2_motion_tasks_msgs::planGoalConstPtr&
 	
 	
 	taskArmGroup_ = goal->planGroup;
+
+	if (taskArmGroup_ == "panda_1_arm")
+    {
+		ikFrame_  = "panda_1_link8";
+		baseFrame_ = "/panda_1_link0";
+		eef_ = "panda_1_hand";
+    }
+    else if (taskArmGroup_ == "panda_2_arm")
+    {
+        ikFrame_  = "panda_2_link8";
+		baseFrame_ = "/panda_2_link0";
+		eef_ = "panda_2_hand";
+    }
+	else if (taskArmGroup_ == "panda_arm")
+	{
+		ikFrame_  = "panda_link8";
+		baseFrame_ = "/panda_link0";
+		eef_ = "hand";
+	}
+	else
+	{
+		ROS_ERROR("Planning group specified can't be used. Available planning groups are : ");
+		ROS_ERROR("[panda_1_arm] and [panda_2_arm] when working with both pandas ");
+		ROS_ERROR("[panda_arm] when working with only one panda");
+		planResult.error_code = -1;
+		planServer_->setAborted(planResult);
+		return;
+	}
 
 
 	// reset the task to avoid problem on introspection

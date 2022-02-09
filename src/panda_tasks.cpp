@@ -28,7 +28,7 @@ motionPlanning::motionPlanning(ros::NodeHandle& nh)
 	{
 		if ((plannerConfig_ != "RRT") && (plannerConfig_ != "RRTConnect") && (plannerConfig_ != "TRRT" ))
 		{
-			ROS_INFO("[motionPlanning constructor][planner_name parameter does not exist, setting planner to default one]");
+			ROS_INFO("[motionPlanning constructor][planner_config parameter does not exist, setting planner to default one]");
 			plannerConfig_ = PLANNER;
 		}
 	}

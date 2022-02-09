@@ -90,7 +90,7 @@
 #include <string.h>
 
 // Name of the ontology of the robot
-#define ROBOT_ONTOLOGY_NAME "panda_robot"
+#define ROBOT_ONTOLOGY_NAME "dual_pandas"
 
 // Default planner used when creating a task
 #define PLANNER "TRRT"
@@ -108,7 +108,7 @@
 
 // name of the topic to access the getBoundingBox service
 // handeld by the situation assesment
-#define GET_BOUNDINGBOX_TOPIC "/panda_robot/getBoundingBox"
+#define GET_BOUNDINGBOX_TOPIC "/dual_pandas/getBoundingBox"
 
 // define max number of solution that Moveit
 // task constructor will search for when planning 

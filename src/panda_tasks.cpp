@@ -33,6 +33,8 @@ motionPlanning::motionPlanning(ros::NodeHandle& nh)
 		}
 	}
 
+	fixedFrame_ = "realsense_link";
+
 	// Load the common kinematic model of the robot that will be used when creating a task with MTC
 	kinematic_model_ = robot_model_loader_.getModel();
 
@@ -928,8 +930,8 @@ int motionPlanning::updateWorld(ros::ServiceClient& saClient)
 					// Add the mesh to the Collision object message
 					collisionObj.meshes.push_back(mesh);
 
-					// Do the transform only if frame_id isn't panda_link0 already
-					if(srv.response.poses[i].header.frame_id != "/panda_link0")
+					// Do the transform only if frame_id isn't fixedFrame_ already
+					if(srv.response.poses[i].header.frame_id != fixedFrame_)
 					{
 						colliObjPoseUntransformed.pose = srv.response.poses[i].pose;
 						colliObjPoseUntransformed.header.frame_id = srv.response.poses[i].header.frame_id;
@@ -973,8 +975,8 @@ int motionPlanning::updateWorld(ros::ServiceClient& saClient)
 						// Add the mesh to the Collision object message
 						collisionObj.meshes.push_back(mesh);
 
-						// Do the transform only if frame_id isn't panda_link0 already
-						if(srv.response.poses[i].header.frame_id != "/panda_link0")
+						// Do the transform only if frame_id isn't fixedFrame_ already
+						if(srv.response.poses[i].header.frame_id != fixedFrame_)
 						{
 							colliObjPoseUntransformed.pose = srv.response.poses[i].pose;
 							colliObjPoseUntransformed.header.frame_id = srv.response.poses[i].header.frame_id;
@@ -1003,7 +1005,7 @@ int motionPlanning::updateWorld(ros::ServiceClient& saClient)
 					collisionObj.primitives.resize(1);
 
 					// Do the transform only if frame_id isn't base_footprint already
-					if(srv.response.poses[i].header.frame_id != "/panda_link0")
+					if(srv.response.poses[i].header.frame_id != fixedFrame_)
 					{
 						colliObjPoseUntransformed.pose = srv.response.poses[i].pose;
 						colliObjPoseUntransformed.header.frame_id = srv.response.poses[i].header.frame_id;
@@ -1054,8 +1056,8 @@ int motionPlanning::updateWorld(ros::ServiceClient& saClient)
 
 				collisionObj.operation = collisionObj.ADD;
 			
-				// Set frame_id to "panda_link0" as it has been transformed
-				collisionObj.header.frame_id = "panda_link0";
+				// Set frame_id to fixedFrame_ as it has been transformed
+				collisionObj.header.frame_id = fixedFrame_;
 				// Add synchronously the collision object to planning scene (wait for it to be added before continuing)
 				planning_scene_interface_.applyCollisionObject(collisionObj);
 				ROS_INFO_STREAM("[updateWorld] Successfully added to scene object with ID [" + collisionObj.id + "]");
@@ -1127,11 +1129,11 @@ void motionPlanning::getPoseIntoBase(geometry_msgs::PoseStamped in_pose, geometr
 		if (in_pose.header.frame_id[0] == '/')
 			in_pose.header.frame_id = in_pose.header.frame_id.substr(1);
 
-		transform = tfBuffer_.lookupTransform("panda_link0",in_pose.header.frame_id, ros::Time(0),ros::Duration(5.0));
+		transform = tfBuffer_.lookupTransform(fixedFrame_,in_pose.header.frame_id, ros::Time(0),ros::Duration(5.0));
 	}
 	catch (tf2::TransformException &ex)
 	{
-		ROS_WARN_STREAM("[getPoseIntoBase] Exception while looking up for transform between " << in_pose.header.frame_id << "and panda_link0 [" << ex.what() << "]");
+		ROS_WARN_STREAM("[getPoseIntoBase] Exception while looking up for transform between " << in_pose.header.frame_id << "and " << fixedFrame_ << " [" << ex.what() << "]");
 		return ;
 	}
 
@@ -1239,7 +1241,7 @@ void motionPlanning::planCallback(const pr2_motion_tasks_msgs::planGoalConstPtr&
 
 		getPoseIntoBase(goal->pose,transformedPose);
 
-		transformedPose.header.frame_id = "/panda_link0";
+		transformedPose.header.frame_id = baseFrame_;
 
 		customPoses.push_back(transformedPose);
 
@@ -1255,7 +1257,7 @@ void motionPlanning::planCallback(const pr2_motion_tasks_msgs::planGoalConstPtr&
 	{
 		getPoseIntoBase(goal->pose,customPose);
 
-		customPose.header.frame_id = "/panda_link0";
+		customPose.header.frame_id = baseFrame_;
 
 		customPoses.push_back(customPose);
 
@@ -1282,7 +1284,7 @@ void motionPlanning::planCallback(const pr2_motion_tasks_msgs::planGoalConstPtr&
 
 		getPoseIntoBase(goal->pose,transformedPose);
 
-		transformedPose.header.frame_id = "/panda_link0";
+		transformedPose.header.frame_id = baseFrame_;
 		//transformedPose.pose.position.z += 0.05;
 	
 		customPoses.push_back(transformedPose);

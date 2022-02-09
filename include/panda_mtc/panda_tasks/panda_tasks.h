@@ -208,6 +208,12 @@ class motionPlanning
         // Variable to set the eef used during task
         std::string eef_;
 
+        // Variable to store the base frame of the robot 
+        std::string baseFrame_;
+
+        // Variable to store the fixed frame of the system (realsense frame) 
+        std::string fixedFrame_;
+
         // Variable to set the eef
         // used during dual arm task
         std::string first_eef_;

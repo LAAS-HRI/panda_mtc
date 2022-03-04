@@ -1271,7 +1271,7 @@ void motionPlanning::planCallback(const pr2_motion_tasks_msgs::planGoalConstPtr&
 
 		getPoseIntoBase(goal->pose,transformedPose);
 
-		transformedPose.header.frame_id = baseFrame_;
+		transformedPose.header.frame_id = fixedFrame_;
 
 		customPoses.push_back(transformedPose);
 
@@ -1287,7 +1287,7 @@ void motionPlanning::planCallback(const pr2_motion_tasks_msgs::planGoalConstPtr&
 	{
 		getPoseIntoBase(goal->pose,customPose);
 
-		customPose.header.frame_id = baseFrame_;
+		customPose.header.frame_id = fixedFrame_;
 
 		customPoses.push_back(customPose);
 
@@ -1314,7 +1314,7 @@ void motionPlanning::planCallback(const pr2_motion_tasks_msgs::planGoalConstPtr&
 
 		getPoseIntoBase(goal->pose,transformedPose);
 
-		transformedPose.header.frame_id = baseFrame_;
+		transformedPose.header.frame_id = fixedFrame_;
 		//transformedPose.pose.position.z += 0.05;
 	
 		customPoses.push_back(transformedPose);
